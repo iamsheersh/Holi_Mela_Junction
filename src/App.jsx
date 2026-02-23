@@ -341,7 +341,7 @@ export default function App() {
 
   const processOrder = async () => {
     setLoading(true);
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzS0W3T3LpX8Sp7xmi6DVk-o0RwRQFbpd9dqYjbQqNSZV-cqytlhOj3pbWSE-OajKL1/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLoh30NaT0U86dDa_Fa29gIpO4j4dOymA9vEgBAKluqGEywxUHVaHmfEB1tLzE990/exec";
     const generatedId = 'HM' + Math.floor(Math.random() * 1000000);
     
     try {
