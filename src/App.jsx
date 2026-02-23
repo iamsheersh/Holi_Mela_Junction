@@ -261,7 +261,7 @@ const SuccessView = ({ formData, orderId }) => (
         <CheckCircle size={48} className="text-green-600" />
       </div>
       <h2 className="text-3xl font-black text-gray-800 mb-2">Order Confirmed!</h2>
-      <p className="text-gray-500 mb-6">Yay! Your {formData.qty > 1 ? `${formData.qty} plates of ` : ''}{formData.option} are reserved. Confirmation mail sent to your inbox.</p>
+      <p className="text-gray-500 mb-6">Yay! Your {formData.qty > 1 ? `${formData.qty} plates of ` : ''}{formData.option} are reserved at Golgappa Junction. Take screenshot of this Page for the proof of order.</p>
       
       <div className="bg-gray-50 rounded-2xl p-4 text-left space-y-2 mb-8 border border-gray-100">
         <div className="flex justify-between text-xs font-bold">
