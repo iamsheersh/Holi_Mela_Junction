@@ -4,7 +4,9 @@ import {
   CheckCircle, 
   User, 
   ShoppingBag,
-  Info
+  Info,
+  Plus,
+  Minus
 } from 'lucide-react';
 
 // --- VIEW: REGISTRATION FORM ---
@@ -50,6 +52,31 @@ const SelectionView = ({ formData, setFormData, handleInitialSubmit, handleRoleC
               <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider">{opt.sub}</div>
             </button>
           ))}
+        </div>
+
+        {/* Quantity Field */}
+        <div className="mt-6 flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+          <div className="space-y-0.5">
+            <span className="text-sm font-bold text-gray-800 block">Number of Plates</span>
+            <span className="text-xs text-gray-400 font-medium">₹{formData.price} per plate</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <button 
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, qty: Math.max(1, prev.qty - 1) }))}
+              className="w-10 h-10 flex items-center justify-center bg-white rounded-xl border border-gray-200 shadow-sm hover:border-pink-400 text-gray-600 transition-colors"
+            >
+              <Minus size={18} />
+            </button>
+            <span className="text-xl font-black text-gray-800 min-w-[20px] text-center">{formData.qty}</span>
+            <button 
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, qty: prev.qty + 1 }))}
+              className="w-10 h-10 flex items-center justify-center bg-white rounded-xl border border-gray-200 shadow-sm hover:border-pink-400 text-gray-600 transition-colors"
+            >
+              <Plus size={18} />
+            </button>
+          </div>
         </div>
       </section>
 
@@ -102,7 +129,6 @@ const SelectionView = ({ formData, setFormData, handleInitialSubmit, handleRoleC
           </div>
         </div>
 
-        {/* Dynamic Student Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
             <span className="text-xs font-bold text-gray-400 ml-1">Course</span>
@@ -142,7 +168,6 @@ const SelectionView = ({ formData, setFormData, handleInitialSubmit, handleRoleC
           </div>
         </div>
 
-        {/* "Other" Course Field - Appears only when Student + Other selected */}
         {formData.role === 'student' && !['BBA', 'BCA', 'BScIT', 'BCOM', 'PGDM', 'MCA', 'MBA', 'NA'].includes(formData.course) && (
           <div className="space-y-1 animate-in slide-in-from-left duration-300">
             <span className="text-xs font-bold text-gray-400 ml-1">Specify Other Course</span>
@@ -219,7 +244,7 @@ const SelectionView = ({ formData, setFormData, handleInitialSubmit, handleRoleC
            </span>
         ) : (
           <>
-            CONFIRM ORDER - ₹{formData.price}
+            CONFIRM ORDER - ₹{formData.price * formData.qty}
             <Zap size={20} className="fill-current group-hover:animate-bounce" />
           </>
         )}
@@ -236,7 +261,7 @@ const SuccessView = ({ formData, orderId }) => (
         <CheckCircle size={48} className="text-green-600" />
       </div>
       <h2 className="text-3xl font-black text-gray-800 mb-2">Order Confirmed!</h2>
-      <p className="text-gray-500 mb-6">Yay! Your {formData.option} are reserved. Confirmation mail sent to your inbox.</p>
+      <p className="text-gray-500 mb-6">Yay! Your {formData.qty > 1 ? `${formData.qty} plates of ` : ''}{formData.option} are reserved. Confirmation mail sent to your inbox.</p>
       
       <div className="bg-gray-50 rounded-2xl p-4 text-left space-y-2 mb-8 border border-gray-100">
         <div className="flex justify-between text-xs font-bold">
@@ -248,8 +273,12 @@ const SuccessView = ({ formData, orderId }) => (
           <span className="text-gray-700">{formData.name}</span>
         </div>
         <div className="flex justify-between text-xs font-bold">
+          <span className="text-gray-400">Total plates:</span>
+          <span className="text-gray-700">{formData.qty}</span>
+        </div>
+        <div className="flex justify-between text-xs font-bold">
           <span className="text-gray-400">Amount:</span>
-          <span className="text-green-600">₹{formData.price}</span>
+          <span className="text-green-600 font-black text-sm">₹{formData.price * formData.qty}</span>
         </div>
       </div>
 
@@ -272,12 +301,13 @@ export default function App() {
   const [formData, setFormData] = useState({
     option: '',
     price: 0,
+    qty: 1, // Default to 1 plate
     role: '',
     name: '',
     course: '',
     id: '',
     batch: '',
-    yearSem: '', // Added Year/Sem to state
+    yearSem: '',
     university: 'none'
   });
 
@@ -296,7 +326,7 @@ export default function App() {
       course: isStudent ? '' : 'NA',
       id: isStudent ? '' : 'NA',
       batch: isStudent ? '' : 'NA',
-      yearSem: isStudent ? '' : 'NA' // Handle Year/Sem logic
+      yearSem: isStudent ? '' : 'NA'
     }));
   };
 
@@ -319,6 +349,7 @@ export default function App() {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
+        // formData now includes 'qty' which will be sent to your sheet
         body: JSON.stringify({ ...formData, orderId: generatedId })
       });
 
