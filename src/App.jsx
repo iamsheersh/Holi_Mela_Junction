@@ -9,7 +9,10 @@ import {
   Minus,
   QrCode,
   Upload,
-  Download
+  Download,
+  Phone,
+  Mail,
+  StickyNote
 } from 'lucide-react';
 
 // --- VIEW: REGISTRATION FORM ---
@@ -133,6 +136,35 @@ const SelectionView = ({ formData, setFormData, handleInitialSubmit, handleRoleC
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
+            <span className="text-xs font-bold text-gray-400 ml-1 flex items-center gap-1">
+              <Phone size={10}/> Phone Number
+            </span>
+            <input 
+              required
+              type="tel" 
+              value={formData.phone}
+              placeholder="10-digit number"
+              className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 outline-none bg-gray-50"
+              onChange={(e) => setFormData({...formData, phone: e.target.value})}
+            />
+          </div>
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-gray-400 ml-1 flex items-center gap-1">
+              <Mail size={10}/> Email ID
+            </span>
+            <input 
+              required
+              type="email" 
+              value={formData.email}
+              placeholder="name@email.com"
+              className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 outline-none bg-gray-50"
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1">
             <span className="text-xs font-bold text-gray-400 ml-1">Course</span>
             {formData.role === 'student' ? (
               <select 
@@ -207,6 +239,24 @@ const SelectionView = ({ formData, setFormData, handleInitialSubmit, handleRoleC
             )}
           </div>
         </div>
+
+        <div className="space-y-1">
+          <span className="text-xs font-bold text-gray-400 ml-1 flex items-center gap-1">
+            <StickyNote size={10}/> Order Note (Optional)
+          </span>
+          <textarea 
+            value={formData.note}
+            placeholder="Special instructions (e.g., extra spicy, no onion)"
+            className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 outline-none bg-gray-50 min-h-[80px]"
+            onChange={(e) => setFormData({...formData, note: e.target.value})}
+          />
+        </div>
+
+        {formData.role !== 'student' && formData.role !== '' && (
+          <p className="text-[10px] text-orange-600 font-bold flex items-center gap-1 bg-orange-50 p-2 rounded-lg">
+            <span className="flex-shrink-0"><Info size={12} /></span> Non-students: Fields automatically set to NA for records.
+          </p>
+        )}
       </section>
 
       <button 
@@ -220,41 +270,10 @@ const SelectionView = ({ formData, setFormData, handleInitialSubmit, handleRoleC
   </div>
 );
 
-
 // --- VIEW: PAYMENT ---
 const PaymentView = ({ formData, onPaymentComplete, loading }) => {
   const [file, setFile] = useState(null);
   const totalAmount = formData.price * formData.qty;
-=======
-// --- VIEW: SUCCESS ---
-const SuccessView = ({ formData, orderId }) => (
-  <div className="max-w-md mx-auto text-center animate-in zoom-in duration-500">
-    <div className="bg-white p-10 rounded-3xl shadow-2xl border-t-8 border-green-500">
-      <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <CheckCircle size={48} className="text-green-600" />
-      </div>
-      <h2 className="text-3xl font-black text-gray-800 mb-2">Order Confirmed!</h2>
-      <p className="text-gray-500 mb-6">Yay! Your {formData.qty > 1 ? `${formData.qty} plates of ` : ''}{formData.option} are reserved at Golgappa Junction. Take screenshot of this Page for the proof of order.</p>
-      
-      <div className="bg-gray-50 rounded-2xl p-4 text-left space-y-2 mb-8 border border-gray-100">
-        <div className="flex justify-between text-xs font-bold">
-          <span className="text-gray-400">Order ID:</span>
-          <span className="text-gray-700">{orderId}</span>
-        </div>
-        <div className="flex justify-between text-xs font-bold">
-          <span className="text-gray-400">Name:</span>
-          <span className="text-gray-700">{formData.name}</span>
-        </div>
-        <div className="flex justify-between text-xs font-bold">
-          <span className="text-gray-400">Total plates:</span>
-          <span className="text-gray-700">{formData.qty}</span>
-        </div>
-        <div className="flex justify-between text-xs font-bold">
-          <span className="text-gray-400">Amount:</span>
-          <span className="text-green-600 font-black text-sm">₹{formData.price * formData.qty}</span>
-        </div>
-      </div>
->>>>>>> ca525f6c434ea6ba1726f85d5695a2389c8ca0e9
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -282,7 +301,6 @@ const SuccessView = ({ formData, orderId }) => (
           <p className="text-gray-500">Total Amount: <span className="text-pink-600 font-bold">₹{totalAmount}</span></p>
         </div>
 
-        {/* QR Code Placeholder - Replace src with your actual UPI QR link */}
         <div className="bg-gray-100 p-4 rounded-2xl mb-6 flex justify-center border-2 border-dashed border-gray-200">
            <img 
             src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=YOUR_UPI_ID@okaxis%26pn=GolgappaJunction%26am=${totalAmount}%26cu=INR`} 
@@ -326,24 +344,53 @@ const SuccessView = ({ formData, orderId }) => (
 // --- VIEW: SUCCESS ---
 const SuccessView = ({ formData, orderId }) => {
   const downloadReceipt = () => {
-    const content = `
-      ORDER RECEIPT - GOLGAPPA JUNCTION
-      --------------------------------
-      Order ID: ${orderId}
-      Name: ${formData.name}
-      Pack: ${formData.option}
-      Quantity: ${formData.qty}
-      Total Amount: ₹${formData.price * formData.qty}
-      Status: Paid
-      --------------------------------
-      Bring this receipt or screenshot to the stall.
-    `;
-    const element = document.createElement("a");
-    const file = new Blob([content], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = `Receipt_${orderId}.txt`;
-    document.body.appendChild(element);
-    element.click();
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Receipt - ${orderId}</title>
+          <style>
+            body { font-family: sans-serif; padding: 40px; color: #333; line-height: 1.6; }
+            .receipt-card { max-width: 400px; margin: auto; border: 2px solid #eee; padding: 30px; border-radius: 20px; }
+            .header { text-align: center; border-bottom: 2px dashed #eee; padding-bottom: 20px; margin-bottom: 20px; }
+            .title { font-size: 24px; font-weight: 900; color: #db2777; margin: 0; }
+            .item { display: flex; justify-between; margin: 10px 0; font-weight: bold; }
+            .label { color: #666; font-size: 14px; flex: 1; }
+            .value { text-align: right; flex: 1; }
+            .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #999; }
+            @media print { .no-print { display: none; } }
+          </style>
+        </head>
+        <body>
+          <div class="receipt-card">
+            <div class="header">
+              <p class="title">GOLGAPPA JUNCTION</p>
+              <p>Holi Mela @ College Fest</p>
+            </div>
+            <div class="item"><span class="label">Order ID:</span><span class="value">${orderId}</span></div>
+            <div class="item"><span class="label">Customer:</span><span class="value">${formData.name}</span></div>
+            <div class="item"><span class="label">Phone:</span><span class="value">${formData.phone}</span></div>
+            <div class="item"><span class="label">Pack:</span><span class="value">${formData.option}</span></div>
+            <div class="item"><span class="label">Quantity:</span><span class="value">${formData.qty} Plates</span></div>
+            <div class="item" style="font-size: 20px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">
+              <span class="label">Total Amount:</span><span class="value" style="color: #16a34a;">₹${formData.price * formData.qty}</span>
+            </div>
+            ${formData.note ? `<div class="item"><span class="label">Note:</span><span class="value">${formData.note}</span></div>` : ''}
+            <div class="footer">
+              <p>Please present this PDF at the stall.</p>
+              <p>Generated on ${new Date().toLocaleString()}</p>
+            </div>
+          </div>
+          <script>
+            window.onload = function() { 
+              window.print(); 
+              setTimeout(function() { window.close(); }, 500); 
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   return (
@@ -353,7 +400,7 @@ const SuccessView = ({ formData, orderId }) => {
           <CheckCircle size={48} className="text-green-600" />
         </div>
         <h2 className="text-3xl font-black text-gray-800 mb-2">Order Confirmed!</h2>
-        <p className="text-gray-500 mb-6">Yay! Your {formData.qty > 1 ? `${formData.qty} plates of ` : ''}{formData.option} are reserved. Take screenshot for proof.</p>
+        <p className="text-gray-500 mb-6">Yay! Your {formData.qty > 1 ? `${formData.qty} plates of ` : ''}{formData.option} are reserved. Download PDF receipt below.</p>
         
         <div className="bg-gray-50 rounded-2xl p-4 text-left space-y-2 mb-8 border border-gray-100">
           <div className="flex justify-between text-xs font-bold"><span className="text-gray-400">Order ID:</span><span className="text-gray-700">{orderId}</span></div>
@@ -367,7 +414,7 @@ const SuccessView = ({ formData, orderId }) => {
             onClick={downloadReceipt}
             className="flex items-center justify-center gap-2 bg-pink-600 text-white py-4 rounded-xl font-bold hover:bg-pink-700 transition-colors shadow-md"
           >
-            <Download size={18} /> RECEIPT
+            <Download size={18} /> PDF RECEIPT
           </button>
           <button 
             onClick={() => window.location.reload()}
@@ -382,11 +429,23 @@ const SuccessView = ({ formData, orderId }) => {
 };
 
 export default function App() {
-  const [view, setView] = useState('form'); // 'form', 'payment', 'success'
+  const [view, setView] = useState('form'); 
   const [loading, setLoading] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [formData, setFormData] = useState({
-    option: '', price: 0, qty: 1, role: '', name: '', course: '', id: '', batch: '', yearSem: '', university: 'none'
+    option: '', 
+    price: 0, 
+    qty: 1, 
+    role: '', 
+    name: '', 
+    phone: '', 
+    email: '', 
+    note: '',  
+    course: '', 
+    id: '', 
+    batch: '', 
+    yearSem: '', 
+    university: 'none'
   });
 
   const pricingOptions = [
@@ -415,7 +474,7 @@ export default function App() {
 
   const processOrder = async (fileData) => {
     setLoading(true);
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxtoQRSiXd0wZ8WpOAwf4RMMM0tsVxv9bgbAPhCqhrZKL3lu0uHMjlYsG2FpUWCpt-x/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbEXgV24ZXXhZ5-OrDRJrADULr8iP3UrA35qhAyLHkBzIluNUgunVQbhmFujtroaJn/exec";
     const generatedId = 'HM' + Math.floor(Math.random() * 1000000);
     
     try {
