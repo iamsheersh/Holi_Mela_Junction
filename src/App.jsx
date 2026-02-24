@@ -12,7 +12,8 @@ import {
   Download,
   Phone,
   Mail,
-  StickyNote
+  StickyNote,
+  Hash
 } from 'lucide-react';
 
 // --- VIEW: REGISTRATION FORM ---
@@ -148,7 +149,7 @@ const SelectionView = ({ formData, setFormData, handleInitialSubmit, handleRoleC
               maxLength="10"
               className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 outline-none bg-gray-50"
               onChange={(e) => {
-                const val = e.target.value.replace(/\D/g, ''); // Fix: Removes any non-numeric characters
+                const val = e.target.value.replace(/\D/g, ''); 
                 setFormData({...formData, phone: val});
               }}
             />
@@ -276,7 +277,7 @@ const SelectionView = ({ formData, setFormData, handleInitialSubmit, handleRoleC
 );
 
 // --- VIEW: PAYMENT ---
-const PaymentView = ({ formData, onPaymentComplete, loading }) => {
+const PaymentView = ({ formData, setFormData, onPaymentComplete, loading }) => {
   const [file, setFile] = useState(null);
   const totalAmount = formData.price * formData.qty;
 
@@ -315,6 +316,21 @@ const PaymentView = ({ formData, onPaymentComplete, loading }) => {
         </div>
 
         <section className="space-y-4 text-left">
+          {/* New Transaction ID Field */}
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-gray-400 ml-1 flex items-center gap-1">
+              <Hash size={10}/> UPI Transaction ID
+            </span>
+            <input 
+              required
+              type="text" 
+              value={formData.transactionId}
+              placeholder="Enter 12-digit Ref No."
+              className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 outline-none bg-gray-50"
+              onChange={(e) => setFormData({...formData, transactionId: e.target.value})}
+            />
+          </div>
+
           <label className="block text-sm font-bold text-gray-700 ml-1">Upload Payment Screenshot</label>
           <div className="relative group">
             <input 
@@ -334,9 +350,9 @@ const PaymentView = ({ formData, onPaymentComplete, loading }) => {
 
         <button 
           onClick={() => onPaymentComplete(file)}
-          disabled={!file || loading}
+          disabled={!file || !formData.transactionId || loading}
           className={`w-full mt-8 flex items-center justify-center gap-2 text-white font-black py-4 rounded-2xl text-xl transition-all ${
-            !file || loading ? 'bg-gray-300' : 'bg-gray-900 hover:bg-black shadow-lg'
+            !file || !formData.transactionId || loading ? 'bg-gray-300' : 'bg-gray-900 hover:bg-black shadow-lg'
           }`}
         >
           {loading ? 'UPLOADING...' : 'CONFIRM ORDER'}
@@ -348,54 +364,62 @@ const PaymentView = ({ formData, onPaymentComplete, loading }) => {
 
 // --- VIEW: SUCCESS ---
 const SuccessView = ({ formData, orderId }) => {
+  // Fixed mobile download/preview logic using Blob and simulated click
   const downloadReceipt = () => {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
+    const receiptHtml = `
       <html>
         <head>
           <title>Receipt - ${orderId}</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
-            body { font-family: sans-serif; padding: 40px; color: #333; line-height: 1.6; }
-            .receipt-card { max-width: 400px; margin: auto; border: 2px solid #eee; padding: 30px; border-radius: 20px; }
-            .header { text-align: center; border-bottom: 2px dashed #eee; padding-bottom: 20px; margin-bottom: 20px; }
-            .title { font-size: 24px; font-weight: 900; color: #db2777; margin: 0; }
-            .item { display: flex; justify-between; margin: 10px 0; font-weight: bold; }
-            .label { color: #666; font-size: 14px; flex: 1; }
-            .value { text-align: right; flex: 1; }
-            .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #999; }
-            @media print { .no-print { display: none; } }
+            body { font-family: sans-serif; padding: 20px; color: #333; line-height: 1.4; background: #fffcf5; }
+            .receipt-card { max-width: 350px; margin: auto; border: 2px solid #eee; padding: 20px; border-radius: 15px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+            .header { text-align: center; border-bottom: 2px dashed #eee; padding-bottom: 15px; margin-bottom: 15px; }
+            .title { font-size: 20px; font-weight: 900; color: #db2777; margin: 0; }
+            .item { display: flex; justify-content: space-between; margin: 8px 0; font-weight: bold; font-size: 13px; }
+            .label { color: #666; }
+            .value { text-align: right; }
+            .footer { text-align: center; margin-top: 20px; font-size: 11px; color: #999; }
+            @media print { body { padding: 0; } .receipt-card { border: none; box-shadow: none; } }
           </style>
         </head>
         <body>
           <div class="receipt-card">
             <div class="header">
               <p class="title">GOLGAPPA JUNCTION</p>
-              <p>Holi Mela @ College Fest</p>
+              <p style="margin:5px 0; font-size:12px;">Holi Mela @ College Fest</p>
             </div>
             <div class="item"><span class="label">Order ID:</span><span class="value">${orderId}</span></div>
             <div class="item"><span class="label">Customer:</span><span class="value">${formData.name}</span></div>
             <div class="item"><span class="label">Phone:</span><span class="value">${formData.phone}</span></div>
+            <div class="item"><span class="label">Txn ID:</span><span class="value">${formData.transactionId}</span></div>
             <div class="item"><span class="label">Pack:</span><span class="value">${formData.option}</span></div>
-            <div class="item"><span class="label">Quantity:</span><span class="value">${formData.qty} Plates</span></div>
-            <div class="item" style="font-size: 20px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">
-              <span class="label">Total Amount:</span><span class="value" style="color: #16a34a;">₹${formData.price * formData.qty}</span>
+            <div class="item"><span class="label">Qty:</span><span class="value">${formData.qty} Plates</span></div>
+            <div class="item" style="font-size: 16px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+              <span class="label">Paid:</span><span class="value" style="color: #16a34a;">₹${formData.price * formData.qty}</span>
             </div>
-            ${formData.note ? `<div class="item"><span class="label">Note:</span><span class="value">${formData.note}</span></div>` : ''}
+            ${formData.note ? `<div class="item" style="border-top:1px solid #eee; padding-top:5px;"><span class="label">Note:</span><span class="value">${formData.note}</span></div>` : ''}
             <div class="footer">
-              <p>Please present this PDF at the stall.</p>
-              <p>Generated on ${new Date().toLocaleString()}</p>
+              <p>Keep this screenshot/PDF for pickup.</p>
+              <p>${new Date().toLocaleString()}</p>
             </div>
           </div>
-          <script>
-            window.onload = function() { 
-              window.print(); 
-              setTimeout(function() { window.close(); }, 500); 
-            };
-          </script>
         </body>
       </html>
-    `);
-    printWindow.document.close();
+    `;
+    
+    const blob = new Blob([receiptHtml], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, '_blank');
+    if (win) {
+        win.focus();
+        // Trigger print after load for PDF saving on mobile
+        win.onload = () => {
+            win.print();
+        };
+    } else {
+        alert("Please allow popups to view receipt.");
+    }
   };
 
   return (
@@ -405,7 +429,7 @@ const SuccessView = ({ formData, orderId }) => {
           <CheckCircle size={48} className="text-green-600" />
         </div>
         <h2 className="text-3xl font-black text-gray-800 mb-2">Order Confirmed!</h2>
-        <p className="text-gray-500 mb-6">Yay! Your {formData.qty > 1 ? `${formData.qty} plates of ` : ''}{formData.option} are reserved. Download PDF receipt below.</p>
+        <p className="text-gray-500 mb-6">Yay! Your {formData.qty > 1 ? `${formData.qty} plates of ` : ''}{formData.option} are reserved. Preview receipt below.</p>
         
         <div className="bg-gray-50 rounded-2xl p-4 text-left space-y-2 mb-8 border border-gray-100">
           <div className="flex justify-between text-xs font-bold"><span className="text-gray-400">Order ID:</span><span className="text-gray-700">{orderId}</span></div>
@@ -419,7 +443,7 @@ const SuccessView = ({ formData, orderId }) => {
             onClick={downloadReceipt}
             className="flex items-center justify-center gap-2 bg-pink-600 text-white py-4 rounded-xl font-bold hover:bg-pink-700 transition-colors shadow-md"
           >
-            <Download size={18} /> PDF RECEIPT
+            <Download size={18} /> PREVIEW PDF
           </button>
           <button 
             onClick={() => window.location.reload()}
@@ -446,6 +470,7 @@ export default function App() {
     phone: '', 
     email: '', 
     note: '',  
+    transactionId: '', // Added Transaction ID
     course: '', 
     id: '', 
     batch: '', 
@@ -474,7 +499,6 @@ export default function App() {
       alert("Please select your pack and role!");
       return;
     }
-    // Final check for 10 digits before proceeding
     if (formData.phone.length !== 10) {
       alert("Please enter a valid 10-digit phone number!");
       return;
@@ -533,6 +557,7 @@ export default function App() {
       {view === 'payment' && (
         <PaymentView 
           formData={formData} 
+          setFormData={setFormData}
           onPaymentComplete={processOrder} 
           loading={loading} 
         />
