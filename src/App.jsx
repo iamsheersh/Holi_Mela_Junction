@@ -220,10 +220,41 @@ const SelectionView = ({ formData, setFormData, handleInitialSubmit, handleRoleC
   </div>
 );
 
+<<<<<<< HEAD
 // --- VIEW: PAYMENT ---
 const PaymentView = ({ formData, onPaymentComplete, loading }) => {
   const [file, setFile] = useState(null);
   const totalAmount = formData.price * formData.qty;
+=======
+// --- VIEW: SUCCESS ---
+const SuccessView = ({ formData, orderId }) => (
+  <div className="max-w-md mx-auto text-center animate-in zoom-in duration-500">
+    <div className="bg-white p-10 rounded-3xl shadow-2xl border-t-8 border-green-500">
+      <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+        <CheckCircle size={48} className="text-green-600" />
+      </div>
+      <h2 className="text-3xl font-black text-gray-800 mb-2">Order Confirmed!</h2>
+      <p className="text-gray-500 mb-6">Yay! Your {formData.qty > 1 ? `${formData.qty} plates of ` : ''}{formData.option} are reserved at Golgappa Junction. Take screenshot of this Page for the proof of order.</p>
+      
+      <div className="bg-gray-50 rounded-2xl p-4 text-left space-y-2 mb-8 border border-gray-100">
+        <div className="flex justify-between text-xs font-bold">
+          <span className="text-gray-400">Order ID:</span>
+          <span className="text-gray-700">{orderId}</span>
+        </div>
+        <div className="flex justify-between text-xs font-bold">
+          <span className="text-gray-400">Name:</span>
+          <span className="text-gray-700">{formData.name}</span>
+        </div>
+        <div className="flex justify-between text-xs font-bold">
+          <span className="text-gray-400">Total plates:</span>
+          <span className="text-gray-700">{formData.qty}</span>
+        </div>
+        <div className="flex justify-between text-xs font-bold">
+          <span className="text-gray-400">Amount:</span>
+          <span className="text-green-600 font-black text-sm">₹{formData.price * formData.qty}</span>
+        </div>
+      </div>
+>>>>>>> ca525f6c434ea6ba1726f85d5695a2389c8ca0e9
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
