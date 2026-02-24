@@ -308,7 +308,7 @@ const PaymentView = ({ formData, onPaymentComplete, loading }) => {
 
         <div className="bg-gray-100 p-4 rounded-2xl mb-6 flex justify-center border-2 border-dashed border-gray-200">
            <img 
-            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=YOUR_UPI_ID@okaxis%26pn=GolgappaJunction%26am=${totalAmount}%26cu=INR`} 
+            src={"/qr.png"} 
             alt="Payment QR"
             className="w-48 h-48"
            />
