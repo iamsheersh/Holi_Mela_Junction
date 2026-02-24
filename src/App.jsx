@@ -220,7 +220,7 @@ const SelectionView = ({ formData, setFormData, handleInitialSubmit, handleRoleC
   </div>
 );
 
-<<<<<<< HEAD
+
 // --- VIEW: PAYMENT ---
 const PaymentView = ({ formData, onPaymentComplete, loading }) => {
   const [file, setFile] = useState(null);
