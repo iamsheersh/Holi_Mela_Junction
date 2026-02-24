@@ -6,7 +6,10 @@ import {
   ShoppingBag,
   Info,
   Plus,
-  Minus
+  Minus,
+  QrCode,
+  Upload,
+  Download
 } from 'lucide-react';
 
 // --- VIEW: REGISTRATION FORM ---
@@ -54,7 +57,6 @@ const SelectionView = ({ formData, setFormData, handleInitialSubmit, handleRoleC
           ))}
         </div>
 
-        {/* Quantity Field */}
         <div className="mt-6 flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
           <div className="space-y-0.5">
             <span className="text-sm font-bold text-gray-800 block">Number of Plates</span>
@@ -168,20 +170,6 @@ const SelectionView = ({ formData, setFormData, handleInitialSubmit, handleRoleC
           </div>
         </div>
 
-        {formData.role === 'student' && !['BBA', 'BCA', 'BScIT', 'BCOM', 'PGDM', 'MCA', 'MBA', 'NA'].includes(formData.course) && (
-          <div className="space-y-1 animate-in slide-in-from-left duration-300">
-            <span className="text-xs font-bold text-gray-400 ml-1">Specify Other Course</span>
-            <input 
-              required
-              type="text" 
-              placeholder="Enter your course name"
-              value={formData.course}
-              className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 outline-none bg-gray-50"
-              onChange={(e) => setFormData({...formData, course: e.target.value})}
-            />
-          </div>
-        )}
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
             <span className="text-xs font-bold text-gray-400 ml-1">Batch</span>
@@ -219,96 +207,155 @@ const SelectionView = ({ formData, setFormData, handleInitialSubmit, handleRoleC
             )}
           </div>
         </div>
-
-        {formData.role !== 'student' && formData.role !== '' && (
-          <p className="text-[10px] text-orange-600 font-bold flex items-center gap-1 bg-orange-50 p-2 rounded-lg">
-            <span className="flex-shrink-0"><Info size={12} /></span> Non-students: Fields automatically set to NA for records.
-          </p>
-        )}
       </section>
 
       <button 
         type="submit"
-        disabled={loading}
-        className={`w-full group relative flex items-center justify-center gap-2 text-white font-black py-4 rounded-2xl text-xl shadow-lg transition-all ${
-          loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-pink-600 to-orange-500 hover:shadow-pink-200 hover:-translate-y-1'
-        }`}
+        className="w-full group relative flex items-center justify-center gap-2 text-white font-black py-4 rounded-2xl text-xl shadow-lg transition-all bg-gradient-to-r from-pink-600 to-orange-500 hover:shadow-pink-200 hover:-translate-y-1"
       >
-        {loading ? (
-           <span className="flex items-center gap-2">
-             <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
-               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-             </svg>
-             CONFIRMING...
-           </span>
-        ) : (
-          <>
-            CONFIRM ORDER - ₹{formData.price * formData.qty}
-            <Zap size={20} className="fill-current group-hover:animate-bounce" />
-          </>
-        )}
+        PROCEED TO PAYMENT - ₹{formData.price * formData.qty}
+        <Zap size={20} className="fill-current group-hover:animate-bounce" />
       </button>
     </form>
   </div>
 );
 
-// --- VIEW: SUCCESS ---
-const SuccessView = ({ formData, orderId }) => (
-  <div className="max-w-md mx-auto text-center animate-in zoom-in duration-500">
-    <div className="bg-white p-10 rounded-3xl shadow-2xl border-t-8 border-green-500">
-      <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <CheckCircle size={48} className="text-green-600" />
-      </div>
-      <h2 className="text-3xl font-black text-gray-800 mb-2">Order Confirmed!</h2>
-      <p className="text-gray-500 mb-6">Yay! Your {formData.qty > 1 ? `${formData.qty} plates of ` : ''}{formData.option} are reserved. Confirmation mail sent to your inbox.</p>
-      
-      <div className="bg-gray-50 rounded-2xl p-4 text-left space-y-2 mb-8 border border-gray-100">
-        <div className="flex justify-between text-xs font-bold">
-          <span className="text-gray-400">Order ID:</span>
-          <span className="text-gray-700">{orderId}</span>
-        </div>
-        <div className="flex justify-between text-xs font-bold">
-          <span className="text-gray-400">Name:</span>
-          <span className="text-gray-700">{formData.name}</span>
-        </div>
-        <div className="flex justify-between text-xs font-bold">
-          <span className="text-gray-400">Total plates:</span>
-          <span className="text-gray-700">{formData.qty}</span>
-        </div>
-        <div className="flex justify-between text-xs font-bold">
-          <span className="text-gray-400">Amount:</span>
-          <span className="text-green-600 font-black text-sm">₹{formData.price * formData.qty}</span>
-        </div>
-      </div>
+// --- VIEW: PAYMENT ---
+const PaymentView = ({ formData, onPaymentComplete, loading }) => {
+  const [file, setFile] = useState(null);
+  const totalAmount = formData.price * formData.qty;
 
-      <button 
-        onClick={() => window.location.reload()}
-        className="w-full bg-gray-900 text-white py-4 rounded-xl font-bold hover:bg-gray-800 transition-colors"
-      >
-        Back to Home
-      </button>
-      <p className="mt-4 text-[10px] text-gray-400">Transaction recorded in Admin Sheet.</p>
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFile({
+          base64: reader.result.split(',')[1],
+          name: selectedFile.name,
+          type: selectedFile.type
+        });
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto animate-in fade-in duration-500">
+      <div className="bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 text-center">
+        <div className="mb-6">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-pink-100 text-pink-600 rounded-full mb-4">
+            <QrCode size={24} />
+          </div>
+          <h2 className="text-2xl font-black text-gray-800">Scan to Pay</h2>
+          <p className="text-gray-500">Total Amount: <span className="text-pink-600 font-bold">₹{totalAmount}</span></p>
+        </div>
+
+        {/* QR Code Placeholder - Replace src with your actual UPI QR link */}
+        <div className="bg-gray-100 p-4 rounded-2xl mb-6 flex justify-center border-2 border-dashed border-gray-200">
+           <img 
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=YOUR_UPI_ID@okaxis%26pn=GolgappaJunction%26am=${totalAmount}%26cu=INR`} 
+            alt="Payment QR"
+            className="w-48 h-48"
+           />
+        </div>
+
+        <section className="space-y-4 text-left">
+          <label className="block text-sm font-bold text-gray-700 ml-1">Upload Payment Screenshot</label>
+          <div className="relative group">
+            <input 
+              type="file" 
+              accept="image/*"
+              onChange={handleFileChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            />
+            <div className={`p-4 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 transition-all ${file ? 'border-green-400 bg-green-50' : 'border-gray-200 group-hover:border-pink-400'}`}>
+              <Upload size={18} className={file ? 'text-green-600' : 'text-gray-400'} />
+              <span className="text-sm font-medium text-gray-600">
+                {file ? file.name : 'Select Screenshot'}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <button 
+          onClick={() => onPaymentComplete(file)}
+          disabled={!file || loading}
+          className={`w-full mt-8 flex items-center justify-center gap-2 text-white font-black py-4 rounded-2xl text-xl transition-all ${
+            !file || loading ? 'bg-gray-300' : 'bg-gray-900 hover:bg-black shadow-lg'
+          }`}
+        >
+          {loading ? 'UPLOADING...' : 'CONFIRM ORDER'}
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
+
+// --- VIEW: SUCCESS ---
+const SuccessView = ({ formData, orderId }) => {
+  const downloadReceipt = () => {
+    const content = `
+      ORDER RECEIPT - GOLGAPPA JUNCTION
+      --------------------------------
+      Order ID: ${orderId}
+      Name: ${formData.name}
+      Pack: ${formData.option}
+      Quantity: ${formData.qty}
+      Total Amount: ₹${formData.price * formData.qty}
+      Status: Paid
+      --------------------------------
+      Bring this receipt or screenshot to the stall.
+    `;
+    const element = document.createElement("a");
+    const file = new Blob([content], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `Receipt_${orderId}.txt`;
+    document.body.appendChild(element);
+    element.click();
+  };
+
+  return (
+    <div className="max-w-md mx-auto text-center animate-in zoom-in duration-500">
+      <div className="bg-white p-10 rounded-3xl shadow-2xl border-t-8 border-green-500">
+        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <CheckCircle size={48} className="text-green-600" />
+        </div>
+        <h2 className="text-3xl font-black text-gray-800 mb-2">Order Confirmed!</h2>
+        <p className="text-gray-500 mb-6">Yay! Your {formData.qty > 1 ? `${formData.qty} plates of ` : ''}{formData.option} are reserved. Take screenshot for proof.</p>
+        
+        <div className="bg-gray-50 rounded-2xl p-4 text-left space-y-2 mb-8 border border-gray-100">
+          <div className="flex justify-between text-xs font-bold"><span className="text-gray-400">Order ID:</span><span className="text-gray-700">{orderId}</span></div>
+          <div className="flex justify-between text-xs font-bold"><span className="text-gray-400">Name:</span><span className="text-gray-700">{formData.name}</span></div>
+          <div className="flex justify-between text-xs font-bold"><span className="text-gray-400">Total plates:</span><span className="text-gray-700">{formData.qty}</span></div>
+          <div className="flex justify-between text-xs font-bold"><span className="text-gray-400">Amount:</span><span className="text-green-600 font-black text-sm">₹{formData.price * formData.qty}</span></div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <button 
+            onClick={downloadReceipt}
+            className="flex items-center justify-center gap-2 bg-pink-600 text-white py-4 rounded-xl font-bold hover:bg-pink-700 transition-colors shadow-md"
+          >
+            <Download size={18} /> RECEIPT
+          </button>
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-gray-900 text-white py-4 rounded-xl font-bold hover:bg-gray-800 transition-colors"
+          >
+            HOME
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function App() {
-  const [view, setView] = useState('form');
+  const [view, setView] = useState('form'); // 'form', 'payment', 'success'
   const [loading, setLoading] = useState(false);
   const [orderId, setOrderId] = useState('');
-  
   const [formData, setFormData] = useState({
-    option: '',
-    price: 0,
-    qty: 1, // Default to 1 plate
-    role: '',
-    name: '',
-    course: '',
-    id: '',
-    batch: '',
-    yearSem: '',
-    university: 'none'
+    option: '', price: 0, qty: 1, role: '', name: '', course: '', id: '', batch: '', yearSem: '', university: 'none'
   });
 
   const pricingOptions = [
@@ -321,12 +368,8 @@ export default function App() {
   const handleRoleChange = (role) => {
     const isStudent = role === 'student';
     setFormData(prev => ({ 
-      ...prev, 
-      role, 
-      course: isStudent ? '' : 'NA',
-      id: isStudent ? '' : 'NA',
-      batch: isStudent ? '' : 'NA',
-      yearSem: isStudent ? '' : 'NA'
+      ...prev, role, 
+      course: isStudent ? '' : 'NA', id: isStudent ? '' : 'NA', batch: isStudent ? '' : 'NA', yearSem: isStudent ? '' : 'NA'
     }));
   };
 
@@ -336,12 +379,12 @@ export default function App() {
       alert("Please select your pack and role!");
       return;
     }
-    processOrder();
+    setView('payment');
   };
 
-  const processOrder = async () => {
+  const processOrder = async (fileData) => {
     setLoading(true);
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLoh30NaT0U86dDa_Fa29gIpO4j4dOymA9vEgBAKluqGEywxUHVaHmfEB1tLzE990/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUPruh9j51RjH5RAHP3T5oWxhkirr8r0SnYDncMtLS8LCDGAQDlc4J7Xfy0N43L08/exec";
     const generatedId = 'HM' + Math.floor(Math.random() * 1000000);
     
     try {
@@ -349,8 +392,13 @@ export default function App() {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
-        // formData now includes 'qty' which will be sent to your sheet
-        body: JSON.stringify({ ...formData, orderId: generatedId })
+        body: JSON.stringify({ 
+          ...formData, 
+          orderId: generatedId,
+          image: fileData?.base64,
+          imageName: fileData?.name,
+          imageType: fileData?.type
+        })
       });
 
       setOrderId(generatedId);
@@ -371,16 +419,26 @@ export default function App() {
         <div className="absolute top-[40%] right-[20%] w-64 h-64 bg-orange-400 rounded-full blur-[80px]"></div>
       </div>
 
-      {view === 'form' ? (
+      {view === 'form' && (
         <SelectionView 
-          formData={formData}
-          setFormData={setFormData}
-          handleInitialSubmit={handleInitialSubmit}
-          handleRoleChange={handleRoleChange}
-          loading={loading}
-          pricingOptions={pricingOptions}
+          formData={formData} 
+          setFormData={setFormData} 
+          handleInitialSubmit={handleInitialSubmit} 
+          handleRoleChange={handleRoleChange} 
+          loading={loading} 
+          pricingOptions={pricingOptions} 
         />
-      ) : (
+      )}
+      
+      {view === 'payment' && (
+        <PaymentView 
+          formData={formData} 
+          onPaymentComplete={processOrder} 
+          loading={loading} 
+        />
+      )}
+
+      {view === 'success' && (
         <SuccessView formData={formData} orderId={orderId} />
       )}
 
