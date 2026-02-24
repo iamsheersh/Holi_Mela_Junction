@@ -144,8 +144,13 @@ const SelectionView = ({ formData, setFormData, handleInitialSubmit, handleRoleC
               type="tel" 
               value={formData.phone}
               placeholder="10-digit number"
+              pattern="[0-9]{10}"
+              maxLength="10"
               className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 outline-none bg-gray-50"
-              onChange={(e) => setFormData({...formData, phone: e.target.value})}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, ''); // Fix: Removes any non-numeric characters
+                setFormData({...formData, phone: val});
+              }}
             />
           </div>
           <div className="space-y-1">
@@ -469,12 +474,17 @@ export default function App() {
       alert("Please select your pack and role!");
       return;
     }
+    // Final check for 10 digits before proceeding
+    if (formData.phone.length !== 10) {
+      alert("Please enter a valid 10-digit phone number!");
+      return;
+    }
     setView('payment');
   };
 
   const processOrder = async (fileData) => {
     setLoading(true);
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbEXgV24ZXXhZ5-OrDRJrADULr8iP3UrA35qhAyLHkBzIluNUgunVQbhmFujtroaJn/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIbgl8E2ZDUeH817B8fxR9edW65ahb2LVseKMuP7tajBYOvhDdK6kuOw_0IX8jWmLU/exec";
     const generatedId = 'HM' + Math.floor(Math.random() * 1000000);
     
     try {
