@@ -308,11 +308,11 @@ const PaymentView = ({ formData, setFormData, onPaymentComplete, loading }) => {
         </div>
 
         <div className="bg-gray-100 p-4 rounded-2xl mb-6 flex justify-center border-2 border-dashed border-gray-200">
-           <img 
+            <img 
             src="/qr.jpeg"
             alt="Payment QR"
             className="w-48 h-48"
-           />
+            />
         </div>
 
         <section className="space-y-4 text-left">
@@ -364,12 +364,12 @@ const PaymentView = ({ formData, setFormData, onPaymentComplete, loading }) => {
 
 // --- VIEW: SUCCESS ---
 const SuccessView = ({ formData, orderId }) => {
-  // Fixed mobile download/preview logic using Blob and simulated click
   const downloadReceipt = () => {
     const receiptHtml = `
       <html>
         <head>
           <title>Receipt - ${orderId}</title>
+          <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
             body { font-family: sans-serif; padding: 20px; color: #333; line-height: 1.4; background: #fffcf5; }
@@ -396,7 +396,7 @@ const SuccessView = ({ formData, orderId }) => {
             <div class="item"><span class="label">Pack:</span><span class="value">${formData.option}</span></div>
             <div class="item"><span class="label">Qty:</span><span class="value">${formData.qty} Plates</span></div>
             <div class="item" style="font-size: 16px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
-              <span class="label">Paid:</span><span class="value" style="color: #16a34a;">₹${formData.price * formData.qty}</span>
+              <span class="label">Paid:</span><span class="value" style="color: #16a34a;">&#8377;${formData.price * formData.qty}</span>
             </div>
             ${formData.note ? `<div class="item" style="border-top:1px solid #eee; padding-top:5px;"><span class="label">Note:</span><span class="value">${formData.note}</span></div>` : ''}
             <div class="footer">
@@ -408,12 +408,12 @@ const SuccessView = ({ formData, orderId }) => {
       </html>
     `;
     
-    const blob = new Blob([receiptHtml], { type: 'text/html' });
+    // Explicitly set UTF-8 charset for the Blob
+    const blob = new Blob([receiptHtml], { type: 'text/html;charset=UTF-8' });
     const url = URL.createObjectURL(blob);
     const win = window.open(url, '_blank');
     if (win) {
         win.focus();
-        // Trigger print after load for PDF saving on mobile
         win.onload = () => {
             win.print();
         };
@@ -470,7 +470,7 @@ export default function App() {
     phone: '', 
     email: '', 
     note: '',  
-    transactionId: '', // Added Transaction ID
+    transactionId: '', 
     course: '', 
     id: '', 
     batch: '', 
