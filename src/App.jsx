@@ -481,8 +481,8 @@ export default function App() {
   const pricingOptions = [
     { label: "20 Pcs (Pre-order)", price: 50, id: "opt1", sub: "Save ₹10" },
     { label: "8 Pcs (Pre-order)", price: 20, id: "opt2", sub: "Early Bird" },
-    { label: "8 Pcs (Standard)", price: 30, id: "opt3", sub: "Regular" },
-    { label: "4 Pcs (Standard)", price: 20, id: "opt4", sub: "Quick Snack" },
+    { label: "9 Pcs (On Stall)", price: 30, id: "opt3", sub: "Regular" },
+    { label: "6 Pcs (On Stall)", price: 20, id: "opt4", sub: "Quick Snack" },
   ];
 
   const handleRoleChange = (role) => {
